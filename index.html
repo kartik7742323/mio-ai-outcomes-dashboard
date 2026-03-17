@@ -197,32 +197,59 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
 
 /* ─── Mobile responsive ─── */
 @media(max-width:768px){
-  .sidebar{width:0;overflow:hidden;padding:0}
-  .main{margin-left:0}
-  .topbar{flex-wrap:wrap;height:auto;padding:10px 14px;gap:8px}
-  .tb-brand{flex-shrink:0;margin-right:0}
-  .tb-tabs{height:40px;order:3;border-top:1px solid #f3f4f6;width:100%;margin:0 -14px;padding:0 14px;overflow-x:auto}
-  .tb-tab{padding:0 14px;white-space:nowrap}
-  .tb-filters{margin-left:0;flex-wrap:wrap;width:100%;gap:8px;padding-bottom:4px}
-  .filter-group{flex:1;min-width:130px;gap:4px}
+  body{overflow-x:hidden}
+  .sidebar{display:none}
+  .main{margin-left:0;max-width:100vw;overflow-x:hidden}
+
+  /* Topbar: brand row + filters row stacked */
+  .topbar{flex-wrap:wrap;height:auto;padding:10px 14px 0;gap:0}
+  .tb-brand{margin-right:auto}
+  .tb-tabs{
+    order:3;width:calc(100% + 28px);margin:6px -14px 0;
+    height:38px;border-top:1px solid #f3f4f6;
+    padding:0 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    display:flex;align-items:stretch;flex-shrink:0
+  }
+  .tb-tab{padding:0 14px;font-size:12px;white-space:nowrap}
+
+  /* Filters: full width row, stack two selects side by side */
+  .tb-filters{
+    order:2;margin-left:0;width:100%;
+    flex-wrap:nowrap;gap:8px;padding:6px 0 8px
+  }
+  .filter-group{flex:1;min-width:0;gap:0}
   .filter-lbl{display:none}
-  .filter-sel{min-width:0;width:100%}
+  .filter-select-wrap{width:100%}
+  .filter-sel{width:100%;min-width:0;font-size:12px;padding:6px 26px 6px 9px}
   .filter-divider{display:none}
-  .content{padding:14px 12px}
+  .custom-range{flex-wrap:wrap;gap:4px}
+  .date-input{flex:1;min-width:100px}
+
+  /* Content */
+  .content{padding:12px}
   .kpi-row{grid-template-columns:repeat(2,1fr)!important;gap:10px}
-  .kpi-card{padding:14px 14px 12px}
+  .kpi-card{padding:14px 12px 12px}
   .kpi-value{font-size:20px}
+  .kpi-sub{font-size:11px}
+  .kpi-metric-label{font-size:9px}
+
+  /* Stack all two-col grids */
   .grid-2,.grid-3c{grid-template-columns:1fr!important;gap:12px}
+
+  /* Heatmap scroll */
   .heatmap-grid{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .heatmap-table{min-width:360px}
-  .card{padding:16px}
+  .heatmap-table{min-width:310px}
+  .heatmap-table th,.heatmap-table .row-label{font-size:9px}
+
+  .card{padding:14px}
+  .card-title{font-size:13px}
   .section-lbl{font-size:10px}
 }
 @media(max-width:480px){
-  .kpi-row{grid-template-columns:1fr!important}
-  .topbar{padding:8px 12px}
-  .tb-brand .tb-insights{display:none}
-  .kpi-value{font-size:22px}
+  .kpi-row{grid-template-columns:repeat(2,1fr)!important}
+  .tb-tabs{display:none}
+  .topbar{padding:10px 12px 0}
+  .sc-card{overflow:visible!important}
 }
 
 /* ─── Heatmap custom tooltip ─── */
@@ -326,7 +353,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
 
     <!-- Agent Success -->
     <div class="section-lbl">Your Agent's Success</div>
-    <div class="card" style="margin-bottom:22px;padding:0;overflow:hidden">
+    <div class="card sc-card" style="margin-bottom:22px;padding:0;overflow:hidden">
       <div id="successCards"></div>
     </div>
 
