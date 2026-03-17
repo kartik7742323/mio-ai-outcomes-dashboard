@@ -195,6 +195,36 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
 
 @media(max-width:900px){.grid-2,.grid-3c{grid-template-columns:1fr}}
 
+/* ─── Mobile responsive ─── */
+@media(max-width:768px){
+  .sidebar{width:0;overflow:hidden;padding:0}
+  .main{margin-left:0}
+  .topbar{flex-wrap:wrap;height:auto;padding:10px 14px;gap:8px}
+  .tb-brand{flex-shrink:0;margin-right:0}
+  .tb-tabs{height:40px;order:3;border-top:1px solid #f3f4f6;width:100%;margin:0 -14px;padding:0 14px;overflow-x:auto}
+  .tb-tab{padding:0 14px;white-space:nowrap}
+  .tb-filters{margin-left:0;flex-wrap:wrap;width:100%;gap:8px;padding-bottom:4px}
+  .filter-group{flex:1;min-width:130px;gap:4px}
+  .filter-lbl{display:none}
+  .filter-sel{min-width:0;width:100%}
+  .filter-divider{display:none}
+  .content{padding:14px 12px}
+  .kpi-row{grid-template-columns:repeat(2,1fr)!important;gap:10px}
+  .kpi-card{padding:14px 14px 12px}
+  .kpi-value{font-size:20px}
+  .grid-2,.grid-3c{grid-template-columns:1fr!important;gap:12px}
+  .heatmap-grid{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .heatmap-table{min-width:360px}
+  .card{padding:16px}
+  .section-lbl{font-size:10px}
+}
+@media(max-width:480px){
+  .kpi-row{grid-template-columns:1fr!important}
+  .topbar{padding:8px 12px}
+  .tb-brand .tb-insights{display:none}
+  .kpi-value{font-size:22px}
+}
+
 /* ─── Heatmap custom tooltip ─── */
 #hmTooltip{
   position:fixed;pointer-events:none;z-index:9999;
@@ -390,7 +420,55 @@ const HEATMAP={
   },
 };
 
-let activeAgents=['lq','lr'],activeFilter='all',activeOutcomeAgent='all',activeConnAgent='all';
+const PERIOD_DATA={
+  '7d':{
+    lq:{records:105,attempts:132,connected:100,successVal:76,successRate:58},
+    lr:{records:38, attempts:48, connected:36, successVal:23, successRate:48},
+  },
+  '30d':{
+    lq:{records:450,attempts:500,connected:408,successVal:360,successRate:72},
+    lr:{records:160,attempts:200,connected:155,successVal:130,successRate:65},
+  },
+  '90d':{
+    lq:{records:1320,attempts:1480,connected:1198,successVal:1050,successRate:71},
+    lr:{records:480, attempts:610, connected:467, successVal:390, successRate:64},
+  },
+  'month':{
+    lq:{records:380,attempts:420,connected:340,successVal:298,successRate:70},
+    lr:{records:135,attempts:170,connected:130,successVal:108,successRate:64},
+  },
+};
+const PERIOD_DELTAS={
+  '7d':    {attempts:'▲ 4.2% vs prior', conn:'▲ 1.9% vs prior', goal:'▲ 3.8% YoY'},
+  '30d':   {attempts:'▲ 8.3% vs prior', conn:'▲ 5.1% vs prior', goal:'▲ 11.2% YoY'},
+  '90d':   {attempts:'▲ 12.7% vs prior',conn:'▲ 9.3% vs prior', goal:'▲ 18.6% YoY'},
+  'month': {attempts:'▲ 7.2% vs prior', conn:'▲ 4.3% vs prior', goal:'▲ 9.8% YoY'},
+};
+const LINE_DATA={
+  '7d':{
+    labels:['Mar 11','Mar 12','Mar 13','Mar 14','Mar 15','Mar 16','Mar 17'],
+    lq:[58,62,59,65,63,67,64], lr:[48,51,49,55,53,57,54],
+    sub:'Daily trends — last 7 days',
+  },
+  '30d':{
+    labels:['Feb 25','Feb 26','Feb 27','Feb 28','Mar 1','Mar 2','Mar 3','Mar 4','Mar 5','Mar 6','Mar 7','Mar 8','Mar 9','Mar 10'],
+    lq:[66,69,64,71,72,68,73,70,74,71,75,72,76,73],
+    lr:[57,60,55,63,64,60,65,62,67,64,68,65,69,66],
+    sub:'Daily trends — last 14 days',
+  },
+  '90d':{
+    labels:['Jan W1','Jan W2','Jan W3','Jan W4','Feb W1','Feb W2','Feb W3','Feb W4','Mar W1','Mar W2'],
+    lq:[60,62,64,65,67,68,70,71,72,74], lr:[50,52,54,56,57,59,61,63,64,66],
+    sub:'Weekly trends — last 90 days',
+  },
+  'month':{
+    labels:['Mar 1','Mar 3','Mar 5','Mar 7','Mar 9','Mar 11','Mar 13','Mar 15','Mar 17'],
+    lq:[68,70,69,72,71,73,72,74,73], lr:[59,61,60,63,62,64,63,65,64],
+    sub:'Daily trends — this month',
+  },
+};
+
+let activeAgents=['lq','lr'],activeFilter='all',activePeriod='30d',activeOutcomeAgent='all',activeConnAgent='all';
 let lineChart=null;
 
 // ─── Tab switch ───
@@ -402,14 +480,16 @@ function switchTab(btn){
 // ─── Date filter ───
 function handleDateFilter(val){
   const cr=document.getElementById('customRange');
-  if(val==='custom'){cr.classList.remove('hidden');}
-  else{cr.classList.add('hidden');}
+  if(val==='custom'){cr.classList.remove('hidden');return;}
+  cr.classList.add('hidden');
+  activePeriod=val;
+  renderDynamic();
 }
 function applyCustomRange(){
   const from=document.getElementById('dateFrom').value;
   const to=document.getElementById('dateTo').value;
   if(!from||!to){alert('Please select both From and To dates.');return;}
-  // data would be filtered here; for now just re-render
+  activePeriod='30d'; // treat custom range as 30d data shape
   renderDynamic();
 }
 
@@ -426,6 +506,12 @@ function renderDynamic(){
   buildHeatmaps(agents);
 }
 
+// ─── Period data helper ───
+function getPData(agent){
+  const p=PERIOD_DATA[activePeriod]||PERIOD_DATA['30d'];
+  return Object.assign({},agent,p[agent.id]||{});
+}
+
 // ─── Config note ───
 function renderConfigNote(agents){
   const el=document.getElementById('configNote');
@@ -437,13 +523,15 @@ function renderConfigNote(agents){
 // ─── KPI Cards ───
 function renderKPIs(agents){
   const row=document.getElementById('kpiRow');
-  const totalRecords =agents.reduce((s,a)=>s+a.records,0);
-  const totalAttempts=agents.reduce((s,a)=>s+a.attempts,0);
-  const totalConn    =agents.reduce((s,a)=>s+a.connected,0);
-  const totalGoal    =agents.reduce((s,a)=>s+a.successVal,0);
-  const avgGoal      =Math.round(agents.reduce((s,a)=>s+a.successRate,0)/agents.length);
+  const pd=agents.map(a=>getPData(a));
+  const totalRecords =pd.reduce((s,a)=>s+a.records,0);
+  const totalAttempts=pd.reduce((s,a)=>s+a.attempts,0);
+  const totalConn    =pd.reduce((s,a)=>s+a.connected,0);
+  const totalGoal    =pd.reduce((s,a)=>s+a.successVal,0);
+  const avgGoal      =Math.round(pd.reduce((s,a)=>s+a.successRate,0)/pd.length);
   const connRate     =Math.round(totalConn/totalAttempts*100);
   const attPerRec    =(totalAttempts/totalRecords).toFixed(1);
+  const deltas=PERIOD_DELTAS[activePeriod]||PERIOD_DELTAS['30d'];
 
   const cards=[
     {
@@ -454,19 +542,19 @@ function renderKPIs(agents){
     },
     {
       label:'Total Call Attempts', value:totalAttempts, sub:`${attPerRec}x per record`,
-      badge:{text:'▲ 8.3% vs prior', bg:'#d1fae5', color:'#065f46'},
+      badge:{text:deltas.attempts},
       iconBg:'#d1fae5', iconColor:'#059669',
       icon:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.28h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6 6l1.08-1.08a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.73 16z"/></svg>`,
     },
     {
       label:'Connected Calls', value:totalConn, sub:`${connRate}% connect rate`,
-      badge:{text:'▲ 5.1% vs prior', bg:'#dbeafe', color:'#1e40af'},
+      badge:{text:deltas.conn},
       iconBg:'#dbeafe', iconColor:'#2563eb',
       icon:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
     },
     {
       label:'Goal Achieved', value:totalGoal.toLocaleString(), sub:`${avgGoal}% goal achieved`,
-      badge:{text:'▲ +11.2% YoY', bg:'#fef3c7', color:'#92400e'},
+      badge:{text:deltas.goal},
       iconBg:'#fef3c7', iconColor:'#d97706',
       icon:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
     },
@@ -489,6 +577,7 @@ function renderKPIs(agents){
 function renderSuccessCards(agents){
   const el=document.getElementById('successCards');
   el.innerHTML=`
+  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
   <table class="sc-table">
     <thead>
       <tr>
@@ -502,7 +591,8 @@ function renderSuccessCards(agents){
     </thead>
     <tbody>
       ${agents.map(a=>{
-        const connPct=Math.round(a.connected/a.attempts*100);
+        const pd=getPData(a);
+        const connPct=Math.round(pd.connected/pd.attempts*100);
         return`<tr>
           <td>
             <div class="sc-agent-badge">
@@ -514,33 +604,35 @@ function renderSuccessCards(agents){
             </div>
           </td>
           <td style="text-align:left;white-space:nowrap"><span style="display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;background:${a.bgLight};color:${a.color};white-space:nowrap">${a.type}</span></td>
-          <td>${a.records.toLocaleString()}</td>
-          <td>${a.attempts.toLocaleString()}</td>
+          <td>${pd.records.toLocaleString()}</td>
+          <td>${pd.attempts.toLocaleString()}</td>
           <td>
-            <span class="sc-num">${a.connected.toLocaleString()}</span>
+            <span class="sc-num">${pd.connected.toLocaleString()}</span>
             <span class="sc-pct-pill sc-pct-blue" style="margin-left:6px">${connPct}%</span>
           </td>
           <td>
-            <span class="sc-num">${a.successVal.toLocaleString()}</span>
-            <span class="sc-pct-pill" style="margin-left:6px;background:${a.color}1a;color:${a.color}">${a.successRate}%</span>
+            <span class="sc-num">${pd.successVal.toLocaleString()}</span>
+            <span class="sc-pct-pill" style="margin-left:6px;background:${a.color}1a;color:${a.color}">${pd.successRate}%</span>
           </td>
         </tr>`;
       }).join('')}
     </tbody>
-  </table>`;
+  </table>
+  </div>`;
 }
 
 // ─── Line Chart ───
 function renderLine(agents){
-  const labels=['Feb 25','Feb 26','Feb 27','Feb 28','Mar 1','Mar 2','Mar 3','Mar 4','Mar 5','Mar 6','Mar 7','Mar 8','Mar 9','Mar 10'];
-  // Use visually distinct chart colors regardless of agent brand color
+  const periodLine=LINE_DATA[activePeriod]||LINE_DATA['30d'];
+  const labels=periodLine.labels;
   const LINE_COLORS=['#5b21b6','#2563eb','#059669','#d97706'];
   const datasets=agents.map((a,i)=>{
     const c=LINE_COLORS[i]||a.color;
-    return{label:a.short,data:labels.map(()=>Math.min(100,Math.max(10,Math.round(a.successRate+(Math.random()-.5)*12)))),
+    const data=periodLine[a.id]||labels.map(()=>Math.round(a.successRate));
+    return{label:a.short,data,
       borderColor:c,backgroundColor:c+'22',borderWidth:2,pointRadius:3,pointBackgroundColor:c,tension:.4,fill:agents.length===1};
   });
-  document.getElementById('lineSubtitle').textContent=agents.map(a=>a.short).join(' vs ')+' — last 14 days';
+  document.getElementById('lineSubtitle').textContent=agents.map(a=>a.short).join(' vs ')+' — '+(periodLine.sub||'last 14 days');
   const ctx=document.getElementById('lineChart').getContext('2d');
   if(lineChart) lineChart.destroy();
   lineChart=new Chart(ctx,{type:'line',data:{labels,datasets},
