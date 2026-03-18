@@ -671,11 +671,7 @@ function renderLine(agents){
 
 // ─── Heatmap (connection only) ───
 function buildHeatmaps(agents){
-  if(agents.length>1){
-    if(activeConnAgent!=='all'&&!agents.find(a=>a.id===activeConnAgent)) activeConnAgent='all';
-  } else {
-    if(activeConnAgent==='all') activeConnAgent=agents[0].id;
-  }
+  if(!agents.find(a=>a.id===activeConnAgent)) activeConnAgent=agents[0].id;
   _populateHmSelect('hmSelConn', agents, activeConnAgent);
   _renderHmGrid('connection', activeConnAgent, agents);
 }
@@ -686,8 +682,7 @@ function switchHeatmapAgentFor(mode, id){
 }
 function _populateHmSelect(selId, agents, activeId){
   const sel=document.getElementById(selId);
-  const allOpt=agents.length>1?`<option value="all"${activeId==='all'?' selected':''}>All Agents</option>`:'';
-  sel.innerHTML=allOpt+agents.map(a=>`<option value="${a.id}"${a.id===activeId?' selected':''}>${a.name}</option>`).join('');
+  sel.innerHTML=agents.map(a=>`<option value="${a.id}"${a.id===activeId?' selected':''}>${a.name}</option>`).join('');
 }
 // Average heatmap data across all provided agents
 function _avgHeatmapData(mode, agents){
