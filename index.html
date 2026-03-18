@@ -367,7 +367,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
 
     <!-- Call Connection Heatmap + Insights -->
     <div class="card" style="margin-bottom:22px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start">
+      <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:start">
 
         <!-- Left: Heatmap -->
         <div>
@@ -747,10 +747,20 @@ function _renderHmGrid(mode, agentId, agents){
   const weekdayAvg=Math.round([0,1,2,3,4].reduce((s,ci)=>s+dayAvg[ci],0)/5);
   const weekendAvg=Math.round([5,6].reduce((s,ci)=>s+dayAvg[ci],0)/2);
 
+  // second best hour
+  const sortedHourAvg=[...hourAvg].sort((a,b)=>b-a);
+  const secondBestHourIdx=hourAvg.indexOf(sortedHourAvg[1]);
+  // worst hour
+  const worstHourIdx=hourAvg.indexOf(Math.min(...hourAvg));
+  // drop-off: difference between peak and worst hour
+  const dropOff=hourAvg[bestHourIdx]-hourAvg[worstHourIdx];
+
   const insights=[
     {icon:'🏆', bg:accentBg, txt:`<strong>${hours[peakR]} on ${days[peakC]}</strong> is your peak slot with <strong>${peakVal}%</strong> ${metric}.`},
-    {icon:'📅', bg:accentBg, txt:`<strong>${days[bestDayIdx]}</strong> consistently shows the highest ${metric} (avg <strong>${dayAvg[bestDayIdx]}%</strong>). Consider prioritising calls on this day.`},
-    {icon:'📉', bg:'#fef3c7', txt:`<strong>${days[worstDayIdx]}</strong> has the lowest ${metric} (avg <strong>${dayAvg[worstDayIdx]}%</strong>). Avoid scheduling heavy outreach on this day.`},
+    {icon:'📅', bg:accentBg, txt:`<strong>${days[bestDayIdx]}</strong> is your strongest day with an avg ${metric} of <strong>${dayAvg[bestDayIdx]}%</strong>. Prioritise outreach here.`},
+    {icon:'⏰', bg:accentBg, txt:`<strong>${hours[bestHourIdx]}</strong> and <strong>${hours[secondBestHourIdx]}</strong> are your two best calling hours — avg <strong>${hourAvg[bestHourIdx]}%</strong> and <strong>${hourAvg[secondBestHourIdx]}%</strong> respectively.`},
+    {icon:'📉', bg:'#fef3c7', txt:`<strong>${days[worstDayIdx]}</strong> consistently underperforms (avg <strong>${dayAvg[worstDayIdx]}%</strong>). Avoid heavy scheduling on this day.`},
+    {icon:'📊', bg:'#f3f4f6', txt:`Weekday ${metric} averages <strong>${weekdayAvg}%</strong> vs <strong>${weekendAvg}%</strong> on weekends — a <strong>${Math.abs(weekdayAvg-weekendAvg)}%</strong> ${weekdayAvg>weekendAvg?'weekday advantage':'weekend advantage'}.`},
   ];
 
   document.getElementById(insightId).innerHTML=insights.map(i=>`
