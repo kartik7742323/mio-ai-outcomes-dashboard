@@ -371,14 +371,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
 
         <!-- Left: Heatmap -->
         <div>
-          <div class="flex-between" style="margin-bottom:10px;align-items:flex-start">
-            <div>
-              <div class="card-title">Call Connection Heatmap</div>
-              <div class="card-sub" style="margin-bottom:0">Peak time when your call connection is highest.</div>
-            </div>
-            <div class="filter-select-wrap">
-              <select class="filter-sel hm-sel" id="hmSelConn" onchange="switchHeatmapAgentFor('connection',this.value)"></select>
-            </div>
+          <div style="margin-bottom:10px">
+            <div class="card-title">Call Connection Heatmap</div>
+            <div class="card-sub" style="margin-bottom:0">Peak time when your call connection is highest.</div>
           </div>
           <div class="heatmap-grid">
             <table class="heatmap-table" id="hmTableConn"></table>
@@ -669,16 +664,10 @@ function renderLine(agents){
       animation:{duration:500}}});
 }
 
-// ─── Heatmap (connection only) ───
+// ─── Heatmap (connection only, follows global agent filter) ───
 function buildHeatmaps(agents){
-  if(!agents.find(a=>a.id===activeConnAgent)) activeConnAgent=agents[0].id;
-  _populateHmSelect('hmSelConn', agents, activeConnAgent);
-  _renderHmGrid('connection', activeConnAgent, agents);
-}
-function switchHeatmapAgentFor(mode, id){
-  activeConnAgent=id;
-  const agents=activeFilter==='all'?activeAgents.map(id=>AGENTS[id]):[AGENTS[activeFilter]];
-  _renderHmGrid('connection', id, agents);
+  const agentId=agents.length===1?agents[0].id:'all';
+  _renderHmGrid('connection', agentId, agents);
 }
 function _populateHmSelect(selId, agents, activeId){
   const sel=document.getElementById(selId);
