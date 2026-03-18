@@ -367,7 +367,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
 
     <!-- Call Connection Heatmap + Insights -->
     <div class="card" style="margin-bottom:22px">
-      <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:start">
+      <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:stretch">
 
         <!-- Left: Heatmap -->
         <div>
@@ -386,10 +386,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
         </div>
 
         <!-- Right: Insights -->
-        <div>
+        <div style="display:flex;flex-direction:column;border-left:1px solid #f3f4f6;padding-left:28px">
           <div class="card-title" style="margin-bottom:4px">Heatmap Insights</div>
           <div class="card-sub" style="margin-bottom:14px">Key patterns from your call connection data.</div>
-          <div class="hm-insights" id="hmInsightsConn" style="border-top:none;padding-top:0;margin-top:0"></div>
+          <div class="hm-insights" id="hmInsightsConn" style="border-top:none;padding-top:0;margin-top:0;flex:1;justify-content:space-between"></div>
         </div>
 
       </div>
