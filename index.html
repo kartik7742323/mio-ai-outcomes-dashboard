@@ -365,53 +365,39 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
       <div class="chart-wrap" style="height:220px"><canvas id="lineChart"></canvas></div>
     </div>
 
-    <!-- Two Heatmaps -->
-    <div class="grid-2">
+    <!-- Call Connection Heatmap + Insights -->
+    <div class="card" style="margin-bottom:22px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start">
 
-      <!-- Outcome Rate Heatmap -->
-      <div class="card">
-        <div class="flex-between" style="margin-bottom:10px;align-items:flex-start">
-          <div>
-            <div class="card-title">Your Agent's Success Heatmap</div>
-            <div class="card-sub" style="margin-bottom:0">Peak time when your agent has the highest goal achievement.</div>
+        <!-- Left: Heatmap -->
+        <div>
+          <div class="flex-between" style="margin-bottom:10px;align-items:flex-start">
+            <div>
+              <div class="card-title">Call Connection Heatmap</div>
+              <div class="card-sub" style="margin-bottom:0">Peak time when your call connection is highest.</div>
+            </div>
+            <div class="filter-select-wrap">
+              <select class="filter-sel hm-sel" id="hmSelConn" onchange="switchHeatmapAgentFor('connection',this.value)"></select>
+            </div>
           </div>
-          <div class="filter-select-wrap">
-            <select class="filter-sel hm-sel" id="hmSelOutcome" onchange="switchHeatmapAgentFor('outcome',this.value)"></select>
+          <div class="heatmap-grid">
+            <table class="heatmap-table" id="hmTableConn"></table>
+          </div>
+          <div class="hm-legend">
+            <span class="hm-legend-lbl">Low</span>
+            <div id="hmLegendConn" style="display:flex;gap:2px;align-items:center"></div>
+            <span class="hm-legend-lbl">High</span>
           </div>
         </div>
-        <div class="heatmap-grid">
-          <table class="heatmap-table" id="hmTableOutcome"></table>
+
+        <!-- Right: Insights -->
+        <div>
+          <div class="card-title" style="margin-bottom:4px">Heatmap Insights</div>
+          <div class="card-sub" style="margin-bottom:14px">Key patterns from your call connection data.</div>
+          <div class="hm-insights" id="hmInsightsConn" style="border-top:none;padding-top:0;margin-top:0"></div>
         </div>
-        <div class="hm-legend">
-          <span class="hm-legend-lbl">Low</span>
-          <div id="hmLegendOutcome" style="display:flex;gap:2px;align-items:center"></div>
-          <span class="hm-legend-lbl">High</span>
-        </div>
-        <div class="hm-insights" id="hmInsightsOutcome"></div>
+
       </div>
-
-      <!-- Connection Rate Heatmap -->
-      <div class="card">
-        <div class="flex-between" style="margin-bottom:10px;align-items:flex-start">
-          <div>
-            <div class="card-title">Your Agent's Call Connection Heatmap</div>
-            <div class="card-sub" style="margin-bottom:0">Peak time when your call connection is highest.</div>
-          </div>
-          <div class="filter-select-wrap">
-            <select class="filter-sel hm-sel" id="hmSelConn" onchange="switchHeatmapAgentFor('connection',this.value)"></select>
-          </div>
-        </div>
-        <div class="heatmap-grid">
-          <table class="heatmap-table" id="hmTableConn"></table>
-        </div>
-        <div class="hm-legend">
-          <span class="hm-legend-lbl">Low</span>
-          <div id="hmLegendConn" style="display:flex;gap:2px;align-items:center"></div>
-          <span class="hm-legend-lbl">High</span>
-        </div>
-        <div class="hm-insights" id="hmInsightsConn"></div>
-      </div>
-
     </div>
   </div><!-- /content -->
 </div><!-- /main -->
@@ -683,26 +669,20 @@ function renderLine(agents){
       animation:{duration:500}}});
 }
 
-// ─── Heatmaps (separate: outcome + connection) ───
+// ─── Heatmap (connection only) ───
 function buildHeatmaps(agents){
-  // default to 'all' when multiple agents are visible
   if(agents.length>1){
-    if(activeOutcomeAgent!=='all'&&!agents.find(a=>a.id===activeOutcomeAgent)) activeOutcomeAgent='all';
-    if(activeConnAgent!=='all'   &&!agents.find(a=>a.id===activeConnAgent))    activeConnAgent='all';
+    if(activeConnAgent!=='all'&&!agents.find(a=>a.id===activeConnAgent)) activeConnAgent='all';
   } else {
-    if(activeOutcomeAgent==='all') activeOutcomeAgent=agents[0].id;
-    if(activeConnAgent==='all')    activeConnAgent=agents[0].id;
+    if(activeConnAgent==='all') activeConnAgent=agents[0].id;
   }
-  _populateHmSelect('hmSelOutcome', agents, activeOutcomeAgent);
-  _populateHmSelect('hmSelConn',    agents, activeConnAgent);
-  _renderHmGrid('outcome',    activeOutcomeAgent, agents);
-  _renderHmGrid('connection', activeConnAgent,    agents);
+  _populateHmSelect('hmSelConn', agents, activeConnAgent);
+  _renderHmGrid('connection', activeConnAgent, agents);
 }
 function switchHeatmapAgentFor(mode, id){
-  if(mode==='outcome') activeOutcomeAgent=id;
-  else activeConnAgent=id;
+  activeConnAgent=id;
   const agents=activeFilter==='all'?activeAgents.map(id=>AGENTS[id]):[AGENTS[activeFilter]];
-  _renderHmGrid(mode, id, agents);
+  _renderHmGrid('connection', id, agents);
 }
 function _populateHmSelect(selId, agents, activeId){
   const sel=document.getElementById(selId);
