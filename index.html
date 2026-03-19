@@ -184,9 +184,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
 .hm-legend-lbl{font-size:10px;color:#9ca3af;font-weight:500}
 .hm-legend-step{width:14px;height:9px;border-radius:2px}
 /* ─── Heatmap Insights ─── */
-.hm-insights{margin-top:14px;border-top:1px solid #f3f4f6;padding-top:12px;display:flex;flex-direction:column;gap:7px}
-.hm-insight-row{display:flex;align-items:flex-start;gap:9px}
-.hm-insight-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+.hm-insights{display:flex;flex-direction:column;gap:8px}
+.hm-insight-row{display:flex;align-items:flex-start;gap:10px;background:#f9fafb;border:1px solid #f3f4f6;border-radius:10px;padding:10px 12px}
+.hm-insight-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px;background:#fff}
 .hm-insight-text{font-size:12px;color:#374151;line-height:1.5}
 .hm-insight-text strong{color:#111827;font-weight:600}
 
@@ -389,7 +389,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
         <div style="display:flex;flex-direction:column;border-left:1px solid #f3f4f6;padding-left:28px">
           <div class="card-title" style="margin-bottom:4px">Heatmap Insights</div>
           <div class="card-sub" style="margin-bottom:14px">Key patterns from your call connection data.</div>
-          <div class="hm-insights" id="hmInsightsConn" style="border-top:none;padding-top:0;margin-top:0;flex:1;justify-content:space-between"></div>
+          <div class="hm-insights" id="hmInsightsConn"></div>
         </div>
 
       </div>
@@ -750,7 +750,7 @@ function _renderHmGrid(mode, agentId, agents){
 
   document.getElementById(insightId).innerHTML=insights.map(i=>`
     <div class="hm-insight-row">
-      <div class="hm-insight-icon" style="background:${i.bg}">${i.icon}</div>
+      <div class="hm-insight-icon">${i.icon}</div>
       <div class="hm-insight-text">${i.txt}</div>
     </div>`).join('');
 }
