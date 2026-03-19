@@ -642,16 +642,20 @@ function renderSuccessCards(agents){
           <td style="text-align:left;white-space:nowrap"><span style="display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:600;background:${a.bgLight};color:${a.color};white-space:nowrap">${a.type}</span></td>
           <td>${pd.records.toLocaleString()}</td>
           <td>
-            <span class="sc-num">${pd.connected.toLocaleString()}</span>
-            <span class="sc-pct-pill sc-pct-blue" style="margin-left:6px">${connPct}%</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+              <span class="sc-num">${pd.connected.toLocaleString()}</span>
+              <span class="sc-pct-pill sc-pct-blue">${connPct}%</span>
+            </div>
           </td>
           <td>
             <div style="font-size:15px;font-weight:800;color:#111827;line-height:1">${(pd.attempts/pd.records).toFixed(1)}x</div>
             <div style="font-size:11px;color:#9ca3af;font-weight:400;margin-top:2px">${pd.attempts.toLocaleString()} calls made</div>
           </td>
           <td>
-            <span class="sc-num">${pd.successVal.toLocaleString()}</span>
-            <span class="sc-pct-pill" style="margin-left:6px;background:${a.color}1a;color:${a.color}">${pd.successRate}%</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+              <span class="sc-num">${pd.successVal.toLocaleString()}</span>
+              <span class="sc-pct-pill" style="background:${a.color}1a;color:${a.color}">${pd.successRate}%</span>
+            </div>
           </td>
         </tr>`;
       }).join('')}
