@@ -185,7 +185,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
 .hm-legend-step{width:14px;height:9px;border-radius:2px}
 /* ─── Heatmap Insights ─── */
 .hm-insights{display:flex;flex-direction:column;gap:8px}
-.hm-insight-row{display:flex;align-items:flex-start;gap:10px;background:#f9fafb;border:1px solid #f3f4f6;border-radius:10px;padding:10px 12px}
+.hm-insight-row{display:flex;align-items:flex-start;gap:10px;background:#f9fafb;border:1px solid #f3f4f6;border-radius:10px;padding:9px 12px}
 .hm-insight-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px;background:#fff}
 .hm-insight-text{font-size:12px;color:#374151;line-height:1.5}
 .hm-insight-text strong{color:#111827;font-weight:600}
@@ -386,10 +386,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
         </div>
 
         <!-- Right: Insights -->
-        <div style="display:flex;flex-direction:column;border-left:1px solid #f3f4f6;padding-left:28px">
+        <div style="display:flex;flex-direction:column;border-left:1px solid #f3f4f6;padding-left:28px;min-height:100%">
           <div class="card-title" style="margin-bottom:4px">Heatmap Insights</div>
           <div class="card-sub" style="margin-bottom:14px">Key patterns from your call connection data.</div>
-          <div class="hm-insights" id="hmInsightsConn"></div>
+          <div class="hm-insights" id="hmInsightsConn" style="flex:1;justify-content:space-between"></div>
         </div>
 
       </div>
@@ -691,14 +691,14 @@ function _renderHmGrid(mode, agentId, agents){
   const hours=['9 AM','10 AM','11 AM','12 PM','1 PM','2 PM','3 PM','4 PM','5 PM','6 PM','7 PM','8 PM','9 PM'];
   const tableId=mode==='outcome'?'hmTableOutcome':'hmTableConn';
   const legendId=mode==='outcome'?'hmLegendOutcome':'hmLegendConn';
-  // Outcome: purple opacity ramp; Connection: interpolate #dbeafe → #1e3a8a for strong contrast
+  // Outcome: purple opacity ramp; Connection: near-white → deep navy with power curve for contrast
   const cfn=mode==='outcome'
-    ? v=>`rgba(${hexToRgb(a.color)},${0.08+(v/100)*0.88})`
+    ? v=>`rgba(${hexToRgb(a.color)},${0.06+(v/100)*0.92})`
     : v=>{
-        const t=v/100;
-        const r=Math.round(219+(30-219)*t);   // 219→30
-        const g=Math.round(234+(58-234)*t);   // 234→58
-        const b=Math.round(254+(138-254)*t);  // 254→138
+        const t=Math.pow(v/100,0.7);
+        const r=Math.round(238+(8-238)*t);
+        const g=Math.round(247+(20-247)*t);
+        const b=Math.round(255+(95-255)*t);
         return`rgb(${r},${g},${b})`;
       };
   let html='<thead><tr><th></th>'+days.map(d=>`<th>${d}</th>`).join('')+'</tr></thead><tbody>';
