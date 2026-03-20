@@ -245,6 +245,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
   .heatmap-table{min-width:310px}
   .heatmap-table th,.heatmap-table .row-label{font-size:9px}
 
+  /* Heatmap + Insights: stack vertically on mobile */
+  .hm-layout{grid-template-columns:1fr!important;gap:20px}
+  .hm-layout>div:last-child{border-left:none!important;padding-left:0!important;border-top:1px solid #f3f4f6;padding-top:16px}
+  .hm-insights{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .hm-insight-row{padding:10px 12px}
+  .hm-insight-text{font-size:12px}
+
   .card{padding:14px}
   .card-title{font-size:13px}
   .section-lbl{font-size:10px}
@@ -371,7 +378,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
 
     <!-- Call Connection Heatmap + Insights -->
     <div class="card" style="margin-bottom:22px">
-      <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:stretch">
+      <div class="hm-layout" style="display:grid;grid-template-columns:1.6fr 1fr;gap:28px;align-items:stretch">
 
         <!-- Left: Heatmap -->
         <div>
