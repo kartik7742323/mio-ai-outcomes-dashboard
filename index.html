@@ -321,6 +321,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f5f6f8;color:#0d1b2a;d
         <span class="filter-lbl">Date Range</span>
         <div class="filter-select-wrap">
           <select class="filter-sel" id="dateFilter" onchange="handleDateFilter(this.value)">
+            <option value="1d">Today</option>
+            <option value="yesterday">Yesterday</option>
             <option value="7d">Last 7 Days</option>
             <option value="30d" selected>Last 30 Days</option>
             <option value="90d">Last 90 Days</option>
@@ -516,7 +518,7 @@ const LINE_DATA={
   },
 };
 
-let activeAgents=['lq','lr'],activeFilter='all',activePeriod='30d',activeOutcomeAgent='all',activeConnAgent='all';
+let activeAgents=['lq','lr'],activeFilter='all',activePeriod='30d',activeOutcomeAgent='all',activeConnAgent='all',activeDayCount=30;
 let lineChart=null;
 
 // ─── Tab switch ───
@@ -530,14 +532,19 @@ function handleDateFilter(val){
   const cr=document.getElementById('customRange');
   if(val==='custom'){cr.classList.remove('hidden');return;}
   cr.classList.add('hidden');
-  activePeriod=val;
+  activePeriod=val==='1d'||val==='yesterday'?'30d':val;
+  activeDayCount={
+    '1d':1,'yesterday':1,'7d':7,'30d':30,'90d':90,'month':30
+  }[val]||30;
   renderDynamic();
 }
 function applyCustomRange(){
   const from=document.getElementById('dateFrom').value;
   const to=document.getElementById('dateTo').value;
   if(!from||!to){alert('Please select both From and To dates.');return;}
-  activePeriod='30d'; // treat custom range as 30d data shape
+  const diff=Math.round((new Date(to)-new Date(from))/(1000*60*60*24))+1;
+  activeDayCount=diff>0?diff:1;
+  activePeriod=activeDayCount>=30?'30d':activeDayCount>=7?'7d':'30d';
   renderDynamic();
 }
 
@@ -784,15 +791,17 @@ function _renderHmGrid(mode, agentId, agents){
   // drop-off: difference between peak and worst hour
   const dropOff=hourAvg[bestHourIdx]-hourAvg[worstHourIdx];
 
-  const insights=[
-    {icon:'🏆', bg:accentBg, txt:`<strong>${hours[peakR]} on ${days[peakC]}</strong> is your peak slot with <strong>${peakVal}%</strong> ${metric}.`},
-    {icon:'📅', bg:accentBg, txt:`<strong>${days[bestDayIdx]}</strong> is your strongest day with an avg ${metric} of <strong>${dayAvg[bestDayIdx]}%</strong>. Prioritise outreach here.`},
-    {icon:'⏰', bg:accentBg, txt:`<strong>${hours[bestHourIdx]}</strong> and <strong>${hours[secondBestHourIdx]}</strong> are your two best calling hours — avg <strong>${hourAvg[bestHourIdx]}%</strong> and <strong>${hourAvg[secondBestHourIdx]}%</strong> respectively.`},
-    {icon:'📉', bg:'#fef3c7', txt:`<strong>${days[worstDayIdx]}</strong> consistently underperforms (avg <strong>${dayAvg[worstDayIdx]}%</strong>). Avoid heavy scheduling on this day.`},
-    {icon:'📊', bg:'#f3f4f6', txt:`Weekday ${metric} averages <strong>${weekdayAvg}%</strong> vs <strong>${weekendAvg}%</strong> on weekends — a <strong>${Math.abs(weekdayAvg-weekendAvg)}%</strong> ${weekdayAvg>weekendAvg?'weekday advantage':'weekend advantage'}.`},
+  const allInsights=[
+    {icon:'🏆', bg:accentBg,   always:true,  txt:`<strong>${hours[peakR]} on ${days[peakC]}</strong> is your peak slot with <strong>${peakVal}%</strong> ${metric}.`},
+    {icon:'📅', bg:accentBg,   always:false, txt:`<strong>${days[bestDayIdx]}</strong> is your strongest day with an avg ${metric} of <strong>${dayAvg[bestDayIdx]}%</strong>. Prioritise outreach here.`},
+    {icon:'⏰', bg:accentBg,   always:true,  txt:`<strong>${hours[bestHourIdx]}</strong> and <strong>${hours[secondBestHourIdx]}</strong> are your two best calling hours — avg <strong>${hourAvg[bestHourIdx]}%</strong> and <strong>${hourAvg[secondBestHourIdx]}%</strong> respectively.`},
+    {icon:'📉', bg:'#fef3c7', always:false, txt:`<strong>${days[worstDayIdx]}</strong> consistently underperforms (avg <strong>${dayAvg[worstDayIdx]}%</strong>). Avoid heavy scheduling on this day.`},
+    {icon:'📊', bg:'#f3f4f6', always:false, txt:`Weekday ${metric} averages <strong>${weekdayAvg}%</strong> vs <strong>${weekendAvg}%</strong> on weekends — a <strong>${Math.abs(weekdayAvg-weekendAvg)}%</strong> ${weekdayAvg>weekendAvg?'weekday advantage':'weekend advantage'}.`},
   ];
-
-  document.getElementById(insightId).innerHTML=insights.map(i=>`
+  const insights=activeDayCount<7?allInsights.filter(i=>i.always):allInsights;
+  const el=document.getElementById(insightId);
+  el.style.justifyContent=insights.length<5?'flex-start':'space-between';
+  el.innerHTML=insights.map(i=>`
     <div class="hm-insight-row">
       <div class="hm-insight-icon">${i.icon}</div>
       <div class="hm-insight-text">${i.txt}</div>
